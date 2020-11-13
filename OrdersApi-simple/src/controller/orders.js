@@ -3,7 +3,14 @@ const router = express.Router();
 const pool = require("../sql/_database");
 
 router.get("/", (req, resp, next) => {
-  const getAllQuery = `SELECT * FROM orders`;
+  const getAllQuery = ` SELECT ord.id,
+                               ord.qtt,
+                               pdt.name,
+                               pdt.price,
+                               ord.order_date
+                          FROM orders ord
+                    INNER JOIN products pdt
+                            ON ord.id_product = pdt.id`;
 
   pool.query(getAllQuery, (err, result) => {
     if (err) return resultonse.status(500).send({ error: err });
@@ -12,9 +19,13 @@ router.get("/", (req, resp, next) => {
       orders: result.rows.map((order) => {
         return {
           id: order.id,
-          id_product: order.id_product,
           qtt: order.qtt,
           orderDate: order.order_date,
+          product: {
+            id_product: order.id_product,
+            product_name: order.name,
+            product_price: order.price,
+          },
           request: {
             type: "GET",
             url: "http:localhost:3000/orders/" + order.id,
@@ -60,31 +71,43 @@ router.get("/:id", (req, resp, next) => {
 
 router.post("/", (req, resp, next) => {
   const { id_product, qtt } = req.body;
-
+  const getByIdQuery = `SELECT * FROM products WHERE id = $1`;
   const postQuery = `INSERT INTO orders 
   (id_product, qtt)
   VALUES ($1, $2)`;
 
-  pool.query(postQuery, [id_product, qtt], (err, result) => {
+  pool.query(getByIdQuery, [id_product], (err, result) => {
     if (err) {
-      return resp.status(500).send({ error: err });
+      return resp.status(500).send({ errorGet: err.stack });
     }
 
-    const response = {
-      message: "Order created sucessfully!",
-      createdOrder: {
-        id: result.id,
-        id_product,
-        qtt,
-        request: {
-          type: "GET",
-          url: "http:localhost:3000/orders",
-          description: "List all orders",
-        },
-      },
-    };
+    if (!result.rowCount) {
+      return resp.status(404).send({
+        message: "Order not found for id: " + id_product,
+      });
+    }
 
-    return resp.status(201).send({ response });
+    pool.query(postQuery, [id_product, qtt], (err, result) => {
+      if (err) {
+        return resp.status(500).send({ errorPost: err });
+      }
+
+      const response = {
+        message: "Order created sucessfully!",
+        createdOrder: {
+          id: result.id,
+          id_product,
+          qtt,
+          request: {
+            type: "GET",
+            url: "http:localhost:3000/orders",
+            description: "List all orders",
+          },
+        },
+      };
+
+      return resp.status(201).send({ response });
+    });
   });
 });
 
