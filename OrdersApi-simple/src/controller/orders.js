@@ -16,8 +16,13 @@ router.get("/:id_order", (req, res, next) => {
 });
 
 router.post("/", (req, res, next) => {
+  const order = {
+    id_product: req.body.id_product,
+    qtt: req.body.qtt,
+  };
   res.status(201).send({
-    mesagem: "POST",
+    message: "Add product sucessfull!",
+    createdProduct: order,
   });
 });
 

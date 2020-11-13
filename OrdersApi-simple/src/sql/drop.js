@@ -1,4 +1,5 @@
 const db = require("./_database");
+const env = require("dotenv");
 
 const dropTables = async () => {
   await db.connect();
