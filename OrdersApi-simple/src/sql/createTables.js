@@ -8,7 +8,8 @@ const createTables = async () => {
         name varchar(80) not null unique,
         price decimal (10,2) not null default 0,
         qtt_stock int not null default 0, 
-        description varchar(80) not null
+        description varchar(80) not null,
+        image varchar(500)
         );`);
 
   await db.query(`create table orders (
