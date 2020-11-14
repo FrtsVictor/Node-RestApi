@@ -1,45 +1,77 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const pool = require("../sql/_database");
+const multer = require('multer');
+const { Pool } = require('pg');
+const pool = require('../sql/_database');
 
-router.get("/", (req, resp, next) => {
-  const getAllQuery = `SELECT * FROM products`;
+// _________________ UploadImg Properties_________________
+
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, './uploads/');
+  },
+  filename(req, file, cb) {
+    cb(null, new Date().toISOString() + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5,
+  },
+  fileFilter,
+});
+
+// _________________ROUTES_________________
+
+router.get('/', (req, resp, next) => {
+  const getAllQuery = `
+            SELECT * FROM products`;
 
   pool.query(getAllQuery, (err, result) => {
-    if (err) return resultonse.status(500).send({ error: err });
+    if (err) return resp.status(500).send({ error: err });
 
     const response = {
       totalItems: result.rows.length,
-      products: result.rows.map((pdt) => {
-        return {
-          id: pdt.id,
-          name: pdt.name,
-          description: pdt.description,
-          price: pdt.price,
-          qtt_stock: pdt.qtt_stock,
-          request: {
-            type: "GET",
-            url: "http:localhost:3000/products/" + pdt.id,
-            description: "Return products by id",
-          },
-        };
-      }),
+      products: result.rows.map((pdt) => ({
+        id: pdt.id,
+        name: pdt.name,
+        description: pdt.description,
+        price: pdt.price,
+        qtt_stock: pdt.qtt_stock,
+        request: {
+          type: 'GET',
+          url: `http:localhost:3000/products/${pdt.id}`,
+          description: 'Return products by id',
+        },
+      })),
     };
 
     return resp.status(200).send({ response });
   });
 });
 
-router.get("/:id", (req, resp, next) => {
+router.get('/:id', (req, resp, next) => {
   const { id } = req.params;
-  const getByIdQuery = `SELECT * FROM products WHERE id = $1`;
+  const getByIdQuery = `
+            SELECT * FROM products
+            WHERE id = $1`;
 
   pool.query(getByIdQuery, [id], (err, result) => {
     if (err) return err.status(500).send({ error: err });
 
     if (!result.rowCount) {
       return resp.status(404).send({
-        message: "Product not found for id: " + id,
+        message: 'Product not found for id: ' + id,
       });
     }
 
@@ -50,10 +82,11 @@ router.get("/:id", (req, resp, next) => {
         description: result.rows[0].description,
         price: result.rows[0].price,
         qtt_stock: result.rows[0].qtt_stock,
+        image: result.rows[0].image,
         request: {
-          type: "GET",
-          url: "http:localhost:3000/products/",
-          description: "Return all products",
+          type: 'GET',
+          url: 'http:localhost:3000/products/',
+          description: 'Return all products',
         },
       },
     };
@@ -62,32 +95,37 @@ router.get("/:id", (req, resp, next) => {
   });
 });
 
-router.post("/", (req, resp, next) => {
+router.post('/', upload.single('pdt_img'), (req, resp, next) => {
+  const image = req.file.path;
+  console.log(image);
   const { name, price, qtt_stock, description } = req.body;
-  const postQuery = `INSERT INTO products 
-    (name, price, qtt_stock, description)
-    VALUES ($1, $2, $3, $4)`;
+  const postQuery = `
+            INSERT INTO products
+            (name, price, qtt_stock,
+            description, image)
+      VALUES ($1, $2, $3, $4, $5)`;
 
   pool.query(
     postQuery,
-    [name, price, qtt_stock, description],
+    [name, price, qtt_stock, description, image],
     (err, result) => {
       if (err) {
         return resp.status(500).send({ error: err });
       }
 
       const response = {
-        message: "Product create sucessfully!",
+        message: 'Product create sucessfully!',
         createdProduct: {
           id: result.id,
           name,
           description,
           price,
           qtt_stock,
+          image,
           request: {
-            type: "GET",
-            url: "http:localhost:3000/products/",
-            description: "Return all products",
+            type: 'GET',
+            url: 'http:localhost:3000/products/',
+            description: 'Return all products',
           },
         },
       };
@@ -97,16 +135,20 @@ router.post("/", (req, resp, next) => {
   );
 });
 
-router.put("/:id", (req, resp, next) => {
+router.put('/:id', (req, resp, next) => {
   const { name, price, qtt_stock, description } = req.body;
   const { id } = req.params;
-  const getByIdQuery = `SELECT * FROM products WHERE id = $1`;
-  const patchQuery = `UPDATE products SET
-  name = $1, 
-  price = $2, 
-  qtt_stock = $3,
-  description = $4
-  WHERE id = $5`;
+  const getByIdQuery = `
+            SELECT * FROM products
+            WHERE id = $1`;
+
+  const patchQuery = `
+          UPDATE products
+             SET name = $1,
+                 price = $2,
+                 qtt_stock = $3,
+                 description = $4
+           WHERE id = $5`;
 
   pool.query(getByIdQuery, [id], (err, result) => {
     if (err) {
@@ -115,31 +157,34 @@ router.put("/:id", (req, resp, next) => {
 
     if (!result.rowCount) {
       return resp.status(404).send({
-        message: "Product not found for id: " + id,
+        message: 'Product not found for id: ' + id,
       });
     }
+
+    const image = result.rows[0].image;
 
     pool.query(
       patchQuery,
       [name, price, qtt_stock, description, id],
       (err, result) => {
-        console.log("here");
+        console.log('here');
         if (err) {
           return resp.status(500).send({ error: err });
         }
 
         const response = {
-          message: "Product updated sucessfully!",
+          message: 'Product updated sucessfully!',
           updatedProduct: {
             id: result.id,
             name,
             description,
             price,
             qtt_stock,
+            image,
             request: {
-              type: "GET",
-              url: "http:localhost:3000/products/" + id,
-              description: "Create a brand new product",
+              type: 'GET',
+              url: 'http:localhost:3000/products/' + id,
+              description: 'Create a brand new product',
             },
           },
         };
@@ -149,9 +194,11 @@ router.put("/:id", (req, resp, next) => {
   });
 });
 
-router.delete("/:id", (req, resp, next) => {
+router.delete('/:id', (req, resp, next) => {
   const { id } = req.params;
-  const deleteQuery = `DELETE FROM products WHERE id=$1`;
+  const deleteQuery = `
+            DELETE FROM products
+                  WHERE id=$1`;
 
   pool.query(deleteQuery, [id], (err, rep) => {
     if (err) {
@@ -159,16 +206,16 @@ router.delete("/:id", (req, resp, next) => {
     }
 
     const response = {
-      message: "Product with id " + id + " deleted sucessfully!",
+      message: 'Product with id ' + id + ' deleted sucessfully!',
       request: {
-        type: "POST",
-        url: "http:localhost:3000/products",
-        description: "Create a brand new product",
+        type: 'POST',
+        url: 'http:localhost:3000/products',
+        description: 'Create a brand new product',
         body: {
-          name: "String",
-          description: "String",
-          price: "Number",
-          qtt_stock: "Number",
+          name: 'String',
+          description: 'String',
+          price: 'Number',
+          qtt_stock: 'Number',
         },
       },
     };
