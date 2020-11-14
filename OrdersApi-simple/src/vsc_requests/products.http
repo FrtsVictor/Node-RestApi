@@ -1,0 +1,41 @@
+#Traz os produtod
+
+GET  http://localhost:3000/products/13
+Content-Type: application/json
+###
+
+
+GET  http://localhost:3000/products/
+Content-Type: application/json
+###
+
+
+POST  http://localhost:3000/products 
+Content-Type: application/json
+   
+    {
+        "name": "vsc bolado",
+        "qtt_stock": 100,
+        "price": 1599.99,
+        "image": null,
+        "description": "vsc rest connection"
+    }   
+
+###
+
+PUT  http://localhost:3000/products/13
+Content-Type: application/json
+
+
+    {
+        "name": "vsc making requests",
+        "qtt_stock": 1000,
+        "price": 99.99,
+        "image": null,
+        "description": "vsc rest connection"
+    }
+
+###
+
+DELETE http://localhost:3000/products/13
+Content-Type: application/json
