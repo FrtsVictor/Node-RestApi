@@ -1,7 +1,7 @@
 const express = require('express');
+
 const router = express.Router();
 const multer = require('multer');
-const { Pool } = require('pg');
 const pool = require('../sql/_database');
 
 // _________________ UploadImg Properties_________________
@@ -37,26 +37,29 @@ router.get('/', (req, resp, next) => {
   const getAllQuery = `
             SELECT * FROM products`;
 
-  pool.query(getAllQuery, (err, result) => {
-    if (err) return resp.status(500).send({ error: err });
+  pool.connect((errConnect, conn) => {
+    if (errConnect) return resp.status(500).send({ error: errConnect });
+    conn.query(getAllQuery, (err, result) => {
+      conn.release();
+      if (err) return resp.status(500).send({ error: err });
+      const response = {
+        totalItems: result.rows.length,
+        products: result.rows.map((pdt) => ({
+          id: pdt.id,
+          name: pdt.name,
+          description: pdt.description,
+          price: pdt.price,
+          qtt_stock: pdt.qtt_stock,
+          request: {
+            type: 'GET',
+            url: `http:localhost:3000/products/${pdt.id}`,
+            description: 'Return products by id',
+          },
+        })),
+      };
 
-    const response = {
-      totalItems: result.rows.length,
-      products: result.rows.map((pdt) => ({
-        id: pdt.id,
-        name: pdt.name,
-        description: pdt.description,
-        price: pdt.price,
-        qtt_stock: pdt.qtt_stock,
-        request: {
-          type: 'GET',
-          url: `http:localhost:3000/products/${pdt.id}`,
-          description: 'Return products by id',
-        },
-      })),
-    };
-
-    return resp.status(200).send({ response });
+      return resp.status(200).send({ response });
+    });
   });
 });
 
@@ -71,7 +74,7 @@ router.get('/:id', (req, resp, next) => {
 
     if (!result.rowCount) {
       return resp.status(404).send({
-        message: 'Product not found for id: ' + id,
+        message: `Product not found for id: ${id}`,
       });
     }
 
@@ -109,6 +112,7 @@ router.post('/', upload.single('pdt_img'), (req, resp, next) => {
     postQuery,
     [name, price, qtt_stock, description, image],
     (err, result) => {
+      pool.end();
       if (err) {
         return resp.status(500).send({ error: err });
       }

@@ -1,0 +1,36 @@
+#Traz os produtod
+
+GET  http://localhost:3000/users/4
+Content-Type: application/json
+###
+
+
+GET  http://localhost:3000/users/
+Content-Type: application/json
+###
+
+
+POST  http://localhost:3000/users/register
+Content-Type: application/json
+
+    {
+        "email": "victor@victoaarw2rs",
+        "password": "123321",
+        "username":"loudnwesaas2rs"
+    }
+
+###
+
+PUT  http://localhost:3000/users/4
+Content-Type: application/json
+
+
+    {
+        "id_product": 10,
+        "qtt": 100
+    }
+
+###
+
+DELETE http://localhost:3000/users/13
+Content-Type: application/json
