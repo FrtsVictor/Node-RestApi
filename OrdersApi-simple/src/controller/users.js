@@ -1,14 +1,9 @@
-const express = require('express');
-
-const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const pool = require('../sql/_database');
 
-module.exports = router;
-
-router.post('/register', (req, resp, next) => {
+exports.register = (req, resp, next) => {
   const { username, password, email } = req.body;
   const verifyUserQuery = 'SELECT * FROM users WHERE email = $1';
   const insertQuery = `
@@ -48,9 +43,9 @@ router.post('/register', (req, resp, next) => {
       }
     });
   });
-});
+};
 
-router.post('/login', (req, resp, next) => {
+exports.login = (req, resp, next) => {
   const { email, password } = req.body;
   const querySelect = 'SELECT * FROM users WHERE email = $1';
   pool.connect((errConnect, conn) => {
@@ -95,8 +90,4 @@ router.post('/login', (req, resp, next) => {
       );
     });
   });
-});
-
-router.get('/test', (req, resp, next) => {
-  console.log(process.env.NODE_ENV);
-});
+};
