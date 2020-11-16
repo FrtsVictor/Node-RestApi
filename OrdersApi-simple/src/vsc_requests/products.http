@@ -25,12 +25,12 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuY
 
 ###
 
-PUT  http://localhost:3000/products/13
+PUT  http://localhost:3000/products/12
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE2VDA0OjA5OjI2LjI2MloiLCJpYXQiOjE2MDU0OTk3NjYsImV4cCI6MTYwNTUwMzM2Nn0.f4avOecChd5b-wuHB2rDdScJszTHGf05nM2buOqWRxI
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE2VDE5OjIzOjQzLjc4OVoiLCJpYXQiOjE2MDU1NTQ2MjMsImV4cCI6MTYwNTU1ODIyM30.aFrMxIQShfdyuljIBIfreRCxsAEGfI1LOwagIGutTEo
 
     {
-        "name": "vsc making requests",
+        "name": "vsc making requestss",
         "qtt_stock": 1000,
         "price": 99.99,
         "image": null,

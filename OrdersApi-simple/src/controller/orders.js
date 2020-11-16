@@ -1,17 +1,19 @@
+/* eslint-disable camelcase */
 const pool = require('../sql/_database');
 
-exports.getOrders = (req, resp, next) => {
-  const getAllQuery = ` SELECT ord.id,
-                               ord.qtt,
-                               pdt.name,
-                               pdt.price,
-                               ord.order_date
-                          FROM orders ord
-                    INNER JOIN products pdt
-                            ON ord.id_product = pdt.id`;
+exports.getAll = async (req, resp) => {
+  const getAllQuery = `
+       SELECT ord.id,
+              ord.qtt,
+              pdt.name,
+              pdt.price,
+              ord.order_date
+        FROM orders ord
+  INNER JOIN products pdt
+          ON ord.id_product = pdt.id`;
 
-  pool.query(getAllQuery, (err, result) => {
-    if (err) return resp.status(500).send({ error: err });
+  try {
+    const result = await pool.execute(getAllQuery);
     const response = {
       totalItems: result.rows.length,
       orders: result.rows.map((order) => ({
@@ -32,27 +34,43 @@ exports.getOrders = (req, resp, next) => {
     };
 
     return resp.status(200).send({ response });
-  });
+  } catch (error) {
+    return resp.status(500).send({ error });
+  }
 };
 
-exports.getOrdersById = (req, resp, next) => {
-  const { id } = req.params;
-  const getByIdQuery = 'SELECT * FROM orders WHERE id = $1';
-  pool.query(getByIdQuery, [id], (err, result) => {
-    if (err) return err.status(500).send({ error: err });
+exports.getById = async (req, resp) => {
+  const getByIdQuery = `
+         SELECT ord.id,
+                ord.qtt,
+                pdt.name,
+                pdt.price,
+                ord.order_date
+           FROM orders ord
+     INNER JOIN products pdt
+             ON ord.id_product = pdt.id
+          WHERE ord.id = $1
+              `;
 
+  try {
+    const { id } = req.params;
+
+    const result = await pool.execute(getByIdQuery, [id]);
     if (!result.rowCount) {
       return resp.status(404).send({
         message: `Order not found for id: ${id}`,
       });
     }
-
     const response = {
       order: {
         id: result.rows[0].id,
         id_product: result.rows[0].id_product,
         qtt: result.rows[0].qtt,
         orderDate: result.rows[0].order_date,
+        product: {
+          product_name: result.rows[0].name,
+          product_price: result.rows[0].price,
+        },
         request: {
           type: 'GET',
           url: 'http:localhost:3000/orders',
@@ -60,93 +78,119 @@ exports.getOrdersById = (req, resp, next) => {
         },
       },
     };
-
     return resp.status(200).send(response);
-  });
+  } catch (error) {
+    return resp.status(500).send({ error });
+  }
 };
 
-exports.createOrder = (req, resp, next) => {
-  const { id_product, qtt } = req.body;
-  const getByIdQuery = `
-            SELECT *
-              FROM products
-             WHERE id = $1`;
+exports.create = async (req, resp) => {
+  const getByIdQuery = 'SELECT * FROM products WHERE id = $1';
   const postQuery = `
-            INSERT INTO orders
-              (id_product, qtt)
-            VALUES ($1, $2)`;
-  pool.query(getByIdQuery, [id_product], (err, result) => {
-    if (err) {
-      return resp.status(500).send({ errorGet: err.stack });
-    }
-
-    if (!result.rowCount) {
+      INSERT INTO orders
+                (
+                  id_product,
+                  qtt
+                )
+          VALUES ($1, $2)`;
+  try {
+    const { id_product, qtt } = req.body;
+    const verifyId = await pool.execute(getByIdQuery, [id_product]);
+    if (!verifyId.rowCount) {
       return resp.status(404).send({
         message: `Product not found for id: ${id_product}`,
       });
     }
 
-    pool.query(postQuery, [id_product, qtt], (err, result) => {
-      if (err) {
-        return resp.status(500).send({ errorPost: err });
-      }
-
-      const response = {
-        message: 'Order created sucessfully!',
-        createdOrder: {
-          id: result.id,
-          id_product,
-          qtt,
-          request: {
-            type: 'GET',
-            url: 'http:localhost:3000/orders',
-            description: 'List all orders',
-          },
+    const result = await pool.execute(postQuery, [id_product, qtt]);
+    const response = {
+      message: 'Order created sucessfully!',
+      createdOrder: {
+        id: result.id,
+        id_product,
+        qtt,
+        request: {
+          type: 'GET',
+          url: 'http:localhost:3000/orders',
+          description: 'List all orders',
         },
-      };
+      },
+    };
 
-      return resp.status(201).send({ response });
-    });
-  });
+    return resp.status(201).send({ response });
+  } catch (error) {
+    return resp.status(500).send({ error });
+  }
 };
 
-exports.removeById = (req, resp, next) => {
-  const { id } = req.params;
-  const deleteQuery = `
-          DELETE FROM orders
-          WHERE  id= $1`;
-  const getByIdQuery = `
-          SELECT * FROM orders
-          WHERE id = $1`;
+exports.removeById = async (req, resp) => {
+  const deleteByIdQuery = 'DELETE FROM orders WHERE  id= $1';
+  const getByIdQuery = 'SELECT * FROM orders WHERE id = $1';
 
-  pool.query(getByIdQuery, [id], (err, result) => {
-    if (err) return err.status(500).send({ error: err });
-
-    if (!result.rowCount) {
+  try {
+    const { id } = req.params;
+    const verifyId = await pool.execute(getByIdQuery, [id]);
+    if (!verifyId.rowCount) {
       return resp.status(404).send({
         message: `Order not found for id: ${id}`,
       });
     }
 
-    pool.query(deleteQuery, [id], (err, result) => {
-      if (err) {
-        return resp.status(500).send({ error: err });
-      }
-
-      const response = {
-        message: `Product with id ${id} deleted sucessfully!`,
-        request: {
-          type: 'POST',
-          url: 'http:localhost:3000/orders',
-          description: 'Create a brand new order',
-          body: {
-            id_product: 'Number',
-            qtt: 'Number',
-          },
+    await pool.execute(deleteByIdQuery, [id]);
+    const response = {
+      message: `Product with id ${id} deleted sucessfully!`,
+      request: {
+        type: 'POST',
+        url: 'http:localhost:3000/orders',
+        description: 'Create a brand new order',
+        body: {
+          id_product: 'Number',
+          qtt: 'Number',
         },
-      };
+      },
+    };
+    return resp.status(202).send(response);
+  } catch (error) {
+    return resp.status(500).send({ error });
+  }
+};
 
-      return resp.status(202).send(response);
-    });
-  });
+exports.update = async (req, resp) => {
+  const getByIdQuery = 'SELECT * FROM products WHERE id = $1';
+  const postQuery = `
+      UPDATE orders
+         SET id_product = $1,
+             qtt = $2
+       WHERE id = $3;
+          `;
+  try {
+    const { id_product, qtt } = req.body;
+    const { id } = req.params;
+
+    const verifyId = await pool.execute(getByIdQuery, [id_product]);
+    if (!verifyId.rowCount) {
+      return resp.status(404).send({
+        message: `Product not found for id: ${id_product}`,
+      });
+    }
+
+    const result = await pool.execute(postQuery, [id_product, qtt, id]);
+    const response = {
+      message: 'Order updated sucessfully!',
+      updatedOrder: {
+        id: result.id,
+        id_product,
+        qtt,
+        request: {
+          type: 'GET',
+          url: 'http:localhost:3000/orders',
+          description: 'List all orders',
+        },
+      },
+    };
+
+    return resp.status(202).send({ response });
+  } catch (error) {
+    return resp.status(500).send(error.stack);
+  }
 };
