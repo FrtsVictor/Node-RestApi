@@ -35,19 +35,21 @@ const upload = multer({
 // _________________ROUTES_________________
 
 router.get('/', login.optional, ProductsController.getAll);
-
 router.get('/:id', ProductsController.getById);
 
-// eslint-disable-next-line prettier/prettier
+router.post(
+  '/:id/img',
+  login.mandatory,
+  upload.single('pdt_img'),
+  ProductsController.uploadImage
+);
 router.post(
   '/',
   login.mandatory,
   upload.single('pdt_img'),
   ProductsController.create
 );
-
 router.put('/:id', login.mandatory, ProductsController.update);
-
 router.delete('/:id', login.mandatory, ProductsController.delete);
 
 module.exports = router;
