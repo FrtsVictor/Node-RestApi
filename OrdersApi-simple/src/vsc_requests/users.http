@@ -10,13 +10,28 @@ Content-Type: application/json
 ###
 
 
+GET  http://localhost:3000/users/test
+Content-Type: application/json
+###
+
 POST  http://localhost:3000/users/register
 Content-Type: application/json
 
     {
-        "email": "victor@victoaarw2rs",
+        "email": "victor@victoaarw2rss",
         "password": "123321",
-        "username":"loudnwesaas2rs"
+        "username":"loudnwesaas2srs"
+    }
+
+###
+
+
+POST  http://localhost:3000/users/login
+Content-Type: application/json
+
+    {
+        "email": "victor@victoaarw2rs",
+        "password": "123321"
     }
 
 ###
