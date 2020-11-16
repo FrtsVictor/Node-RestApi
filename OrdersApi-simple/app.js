@@ -2,9 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
-const productsRoute = require('./src/controller/products');
-const ordersRoute = require('./src/controller/orders');
-const usersRoute = require('./src/controller/users');
+const env = require('dotenv').config({ debug: process.env.DEBUG });
+const productsRoute = require('./src/routes/products');
+const ordersRoute = require('./src/routes/orders');
+const usersRoute = require('./src/routes/users');
 
 const app = express();
 
