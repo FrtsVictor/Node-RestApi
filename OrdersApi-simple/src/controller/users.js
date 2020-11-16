@@ -45,45 +45,35 @@ exports.register = (req, resp, next) => {
   });
 };
 
-exports.login = async (req, resp, next) => {
-  const { email, password } = req.body;
+exports.login = async (req, resp) => {
   const querySelect = 'SELECT * FROM users WHERE email = $1';
 
   try {
+    const { email, password } = req.body;
     const result = await pool.execute(querySelect, [email]);
+
     if (result.rowCount < 1) {
       return resp.status(401).send({ message: 'Authentication Failed E' });
     }
-    bcrypt.compare(
-      password,
-      result.rows[0].password,
-      (errBcrypt, resultBcrypt) => {
-        if (errBcrypt) {
-          return resp
-            .status(401)
-            .send({ message: 'Bcr Authentication Failed. ' });
-        }
-        if (resultBcrypt) {
-          const token = jwt.sign(
-            {
-              id: result.rows[0].id,
-              username: result.rows[0].username,
-              email,
-              loginTime: new Date().toISOString(),
-            },
-            'JWT_SECRET',
-            {
-              expiresIn: '1h',
-            }
-          );
-          return resp.status(200).send({
-            message: 'Login sucessfully.',
-            token,
-          });
-        }
-      }
-    );
+
+    if (await bcrypt.compareSync(password, result.rows[0].password)) {
+      const token = jwt.sign(
+        {
+          id: result.rows[0].id,
+          username: result.rows[0].username,
+          email,
+          loginTime: new Date().toISOString(),
+        },
+        'JWT_SECRET',
+        { expiresIn: '1h' }
+      );
+      return resp.status(200).send({
+        message: 'Login sucessfully.',
+        token,
+      });
+    }
+    return resp.status(401).send({ message: 'Authentication Failed P' });
   } catch (error) {
-    return resp.status(401).send({ error });
+    return resp.status(500).send({ error });
   }
 };
