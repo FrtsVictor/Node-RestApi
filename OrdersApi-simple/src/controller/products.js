@@ -1,43 +1,8 @@
-const express = require('express');
-
-const router = express.Router();
-const multer = require('multer');
 const pool = require('../sql/_database');
-const login = require('../middleware/login');
 
-// _________________ UploadImg Properties_________________
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, './uploads/');
-  },
-  filename(req, file, cb) {
-    cb(null, new Date().toISOString() + file.originalname);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
-
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 1024 * 1024 * 5,
-  },
-  fileFilter,
-});
-
-// _________________ROUTES_________________
-
-router.get('/', login.optional, (req, resp, next) => {
+exports.getAll = (req, resp) => {
   const getAllQuery = `
             SELECT * FROM products`;
-
   pool.connect((errConnect, conn) => {
     if (errConnect) return resp.status(500).send({ error: errConnect });
     conn.query(getAllQuery, (err, result) => {
@@ -62,9 +27,9 @@ router.get('/', login.optional, (req, resp, next) => {
       return resp.status(200).send({ response });
     });
   });
-});
+};
 
-router.get('/:id', (req, resp, next) => {
+exports.getById = (req, resp, next) => {
   const { id } = req.params;
   const getByIdQuery = `
             SELECT * FROM products
@@ -97,59 +62,58 @@ router.get('/:id', (req, resp, next) => {
 
     return resp.status(200).send(response);
   });
-});
+};
 
-router.post(
-  '/',
-  login.mandatory,
-  upload.single('pdt_img'),
-  (req, resp, next) => {
-    console.log('req', req.user);
-    const image = req.file.path;
-    const { name, price, qtt_stock, description } = req.body;
-    const postQuery = `
-      INSERT INTO products
-            (name, price, qtt_stock,
-            description, image)
-      VALUES ($1, $2, $3, $4, $5)`;
-
-    pool.connect((errConnect, conn) => {
-      if (errConnect) return resp.status(500).send({ error: errConnect });
-
-      conn.query(
-        postQuery,
-        [name, price, qtt_stock, description, image],
-        (err, result) => {
-          conn.release();
-          if (err) {
-            return resp.status(500).send({ error: err });
-          }
-
-          const response = {
-            message: 'Product create sucessfully!',
-            createdProduct: {
-              id: result.id,
-              name,
-              description,
-              price,
-              qtt_stock,
-              image,
-              request: {
-                type: 'GET',
-                url: 'http:localhost:3000/products/',
-                description: 'Return all products',
-              },
-            },
-          };
-
-          return resp.status(201).send({ response });
-        }
-      );
-    });
+exports.create = (req, resp, next) => {
+  console.log('req', req.user);
+  let image = '';
+  if (!req.file.path) {
+    // image = req.file.path;
+    console.log('img', image);
   }
-);
+  const { name, price, qtt_stock, description } = req.body;
+  const postQuery = `
+    INSERT INTO products
+          (name, price, qtt_stock,
+          description, image)
+    VALUES ($1, $2, $3, $4, $5)`;
 
-router.put('/:id', login.mandatory, (req, resp, next) => {
+  pool.connect((errConnect, conn) => {
+    if (errConnect) return resp.status(500).send({ errConnect });
+
+    conn.query(
+      postQuery,
+      [name, price, qtt_stock, description, image],
+      (errQuery, result) => {
+        conn.release();
+        if (errQuery) {
+          return resp.status(500).send({ errQuery });
+        }
+
+        const response = {
+          message: 'Product create sucessfully!',
+          createdProduct: {
+            id: result.id,
+            name,
+            description,
+            price,
+            qtt_stock,
+            image,
+            request: {
+              type: 'GET',
+              url: 'http:localhost:3000/products/',
+              description: 'Return all products',
+            },
+          },
+        };
+
+        return resp.status(201).send({ response });
+      }
+    );
+  });
+};
+
+exports.update = (req, resp, next) => {
   const { name, price, qtt_stock, description } = req.body;
   const { id } = req.params;
   const getByIdQuery = `
@@ -206,9 +170,9 @@ router.put('/:id', login.mandatory, (req, resp, next) => {
       }
     );
   });
-});
+};
 
-router.delete('/:id', login.mandatory, (req, resp, next) => {
+exports.delete = (req, resp, next) => {
   const { id } = req.params;
   const deleteQuery = `
             DELETE FROM products
@@ -236,6 +200,4 @@ router.delete('/:id', login.mandatory, (req, resp, next) => {
 
     return resp.status(202).send(response);
   });
-});
-
-module.exports = router;
+};
