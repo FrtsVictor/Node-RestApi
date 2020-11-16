@@ -1,14 +1,24 @@
-const { Pool } = require("pg");
-const env = require("dotenv");
+const { Pool } = require('pg');
+const env = require('dotenv');
 
 const pool = new Pool({
-  user: "postgres", //process.env.PSQL_USER,
-  password: "123321''", //process.env.PSQL_PASSWORD,
-  host: "localhost", //process.env.PSQL_HOST,
-  database: "ecommerce", //process.env.PSQL_DATABASE,
-  port: 5432, // process.env.PSQL_PORT,
+  connectionLimit: 1000,
+  user: 'postgres',
+  password: "123321''",
+  host: 'localhost',
+  database: 'ecommerce',
+  port: 5432,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 });
 
-module.exports = pool;
+exports.execute = (query, params = []) =>
+  new Promise((resolve, reject) => {
+    pool.query(query, params, (errQuery, result) => {
+      if (errQuery) {
+        reject(errQuery);
+      }
+      return resolve(result);
+    });
+  });
+exports.pool = pool;
