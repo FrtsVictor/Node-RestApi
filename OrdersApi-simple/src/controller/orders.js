@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
 const pool = require('../sql/_database');
 
-router.get('/', (req, resp, next) => {
+exports.getOrders = (req, resp, next) => {
   const getAllQuery = ` SELECT ord.id,
                                ord.qtt,
                                pdt.name,
@@ -35,9 +33,9 @@ router.get('/', (req, resp, next) => {
 
     return resp.status(200).send({ response });
   });
-});
+};
 
-router.get('/:id', (req, resp, next) => {
+exports.getOrdersById = (req, resp, next) => {
   const { id } = req.params;
   const getByIdQuery = 'SELECT * FROM orders WHERE id = $1';
   pool.query(getByIdQuery, [id], (err, result) => {
@@ -65,9 +63,9 @@ router.get('/:id', (req, resp, next) => {
 
     return resp.status(200).send(response);
   });
-});
+};
 
-router.post('/', (req, resp, next) => {
+exports.createOrder = (req, resp, next) => {
   const { id_product, qtt } = req.body;
   const getByIdQuery = `
             SELECT *
@@ -110,9 +108,9 @@ router.post('/', (req, resp, next) => {
       return resp.status(201).send({ response });
     });
   });
-});
+};
 
-router.delete('/:id', (req, resp, next) => {
+exports.removeById = (req, resp, next) => {
   const { id } = req.params;
   const deleteQuery = `
           DELETE FROM orders
@@ -151,6 +149,4 @@ router.delete('/:id', (req, resp, next) => {
       return resp.status(202).send(response);
     });
   });
-});
-
-module.exports = router;
+};
