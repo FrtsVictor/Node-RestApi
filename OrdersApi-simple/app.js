@@ -6,6 +6,7 @@ const env = require('dotenv').config({ debug: process.env.DEBUG });
 const productsRoute = require('./src/routes/products');
 const ordersRoute = require('./src/routes/orders');
 const usersRoute = require('./src/routes/users');
+const imagesRoute = require('./src/routes/images');
 
 const app = express();
 
@@ -17,7 +18,8 @@ app.use(cors());
 app.use('/products', productsRoute);
 app.use('/orders', ordersRoute);
 app.use('/users', usersRoute);
-app.use('/uploads', express.static('uploads')); //setting upload directory public
+app.use('/images', imagesRoute);
+app.use('/uploads', express.static('uploads'));
 
 app.use((req, res, next) => {
   const error = new Error('Route Not Found');
