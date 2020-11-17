@@ -14,6 +14,7 @@ exports.getAll = async (req, resp) => {
         description: pdt.description,
         price: pdt.price,
         qtt_stock: pdt.qtt_stock,
+        image: pdt.image,
         request: {
           type: 'GET',
           url: `http:localhost:3000/products/${pdt.id}`,
@@ -200,11 +201,11 @@ exports.uploadImage = async (req, resp) => {
       message: 'Image uploaded sucessfully!',
       uploadedImage: {
         id_img: result.id,
-        id_product: req.params.id_product,
+        id_product: req.params.id,
         image_path: req.file.path,
         request: {
           type: 'GET',
-          url: 'http:localhost:3000/products/',
+          url: `http:localhost:3000/products/${req.params.id}/imgs`,
           description: 'Return all products',
         },
       },
@@ -213,5 +214,29 @@ exports.uploadImage = async (req, resp) => {
   } catch (error) {
     console.log(error);
     return resp.status(500).send({ errrodoido: error.stack });
+  }
+};
+
+exports.getProductImages = async (req, resp) => {
+  const getAllQuery = 'SELECT * FROM products_img WHERE id_product = $1';
+  try {
+    const { id } = req.params;
+    const result = await pool.execute(getAllQuery, [id]);
+    const response = {
+      totalImages: result.rows.length,
+      images: result.rows.map((img) => ({
+        id: img.id,
+        id_product: Number(id),
+        path: `http://localhost:3000/${img.img_path}`,
+        request: {
+          type: 'GET',
+          url: `http:localhost:3000/products/${img.id}`,
+          description: 'Return product by id',
+        },
+      })),
+    };
+    return resp.status(200).send({ response });
+  } catch (error) {
+    return resp.status(500).send(error.stack);
   }
 };
