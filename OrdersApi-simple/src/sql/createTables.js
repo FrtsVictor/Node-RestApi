@@ -32,6 +32,20 @@ const createTables = async () => {
       img_path VARCHAR (300)
       )`);
 
+  await db.query(`create table if not exists categories(
+        id serial PRIMARY key,
+        name varchar(100) not null unique,
+        description varchar(150) not null
+    )`);
+
+  await db.query('alter table products add column category_id int not null');
+
+  await db.query('alter table products alter column category_id set not null');
+
+  await db.query(
+    'alter table products add constraint fk_product_category foreign key (category_id) references categories (id)'
+  );
+
   await db.end();
 
   console.log('Created tables: orders & products');
