@@ -3,9 +3,20 @@
 const pool = require('../sql/_database');
 
 exports.getAll = async (req, resp) => {
-  const getAllQuery = 'SELECT * FROM products';
+  let name = '';
+  if (req.query.name) {
+    name = req.query.name;
+  }
+  const getAllQuery = `
+            SELECT *
+              FROM products
+             WHERE category_id = $1
+               AND (
+                    name LIKE '%${name}%'
+               )`;
   try {
-    const result = await pool.execute(getAllQuery);
+    const { category_id } = req.query;
+    const result = await pool.execute(getAllQuery, [category_id]);
     const response = {
       totalItems: result.rows.length,
       products: result.rows.map((pdt) => ({
@@ -24,7 +35,7 @@ exports.getAll = async (req, resp) => {
     };
     return resp.status(200).send({ response });
   } catch (error) {
-    return resp.status(500).send(error.stack);
+    return resp.status(500).send({ error });
   }
 };
 
@@ -59,7 +70,7 @@ exports.getById = async (req, resp) => {
 
     return resp.status(200).send(response);
   } catch (error) {
-    return resp.status(500).send(error.stack);
+    return resp.status(500).send(error);
   }
 };
 
@@ -71,20 +82,25 @@ exports.create = async (req, resp) => {
                     price,
                     qtt_stock,
                     description,
-                    image
+                    image,
+                    category_id
                   )
           VALUES  (
-                    $1, $2, $3, $4, $5
+                    $1, $2, $3, $4, $5, $6
                    )`;
 
   try {
-    const { name, price, qtt_stock, description } = req.body;
+    const { name, price, qtt_stock, description, category_id } = req.body;
+    if (!category_id) {
+      return resp.status(404).send({ error: 'Category mandatory' });
+    }
     const result = await pool.execute(postQuery, [
       name,
       price,
       qtt_stock,
       description,
       req.file.path,
+      category_id,
     ]);
 
     const response = {
@@ -96,6 +112,7 @@ exports.create = async (req, resp) => {
         price,
         qtt_stock,
         image: req.file.path,
+        category_id,
         request: {
           type: 'GET',
           url: 'http:localhost:3000/products/',
@@ -106,7 +123,7 @@ exports.create = async (req, resp) => {
     return resp.status(201).send(response);
   } catch (error) {
     console.log(error);
-    return resp.status(500).send(error.stack);
+    return resp.status(500).send({ error });
   }
 };
 
