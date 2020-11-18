@@ -3,7 +3,7 @@ POST  http://localhost:3000/users/login
 Content-Type: application/json
 
     {
-        "email": "victor@victoaarw2rs",
+        "email": "victor@teste",
         "password": "123321"
     }
 
@@ -19,7 +19,7 @@ Content-Type: application/json
 ###
 
 
-GET  http://localhost:3000/users/test
+GET  http://localhost:3000/users
 Content-Type: application/json
 ###
 
@@ -27,9 +27,9 @@ POST  http://localhost:3000/users/register
 Content-Type: application/json
 
     {
-        "email": "victor@victoaarw2rss",
+        "email": "victor@teste2",
         "password": "123321",
-        "username":"loudnwesaas2srs"
+        "username":"loudness2"
     }
 
 ###
@@ -37,13 +37,12 @@ Content-Type: application/json
 PUT  http://localhost:3000/users/4
 Content-Type: application/json
 
-
     {
-        "id_product": 10,
-        "qtt": 100
+        "username": "Eva Oliveira",
+        "email": "eva-oliveira@gmail.com"
     }
 
 ###
 
-DELETE http://localhost:3000/users/13
+DELETE http://localhost:3000/users/6
 Content-Type: application/json
