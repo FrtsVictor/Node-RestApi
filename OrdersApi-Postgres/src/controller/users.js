@@ -70,3 +70,137 @@ exports.login = async (req, resp) => {
     return resp.status(500).send({ error });
   }
 };
+
+exports.getAll = async (req, resp) => {
+  const getAllQuery = `
+       SELECT *
+         FROM users`;
+
+  try {
+    const result = await pool.execute(getAllQuery);
+    const response = {
+      totalItems: result.rows.length,
+      users: result.rows.map((usr) => ({
+        id: usr.id,
+        email: usr.email,
+        username: usr.username,
+        request: {
+          type: 'GET',
+          url: `http:localhost:3000/users/${usr.id}`,
+          description: 'Return user by id',
+        },
+      })),
+    };
+
+    return resp.status(200).send({ response });
+  } catch (error) {
+    return resp.status(500).send({ error });
+  }
+};
+
+exports.getById = async (req, resp) => {
+  const getAllQuery = `
+       SELECT *
+         FROM users
+        WHERE id = $1`;
+
+  try {
+    const { id } = req.params;
+    const result = await pool.execute(getAllQuery, [id]);
+    const response = {
+      user: {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        username: result.rows[0].username,
+        request: {
+          type: 'GET',
+          url: `http:localhost:3000/users`,
+          description: 'Return all users',
+        },
+      },
+    };
+
+    return resp.status(200).send({ response });
+  } catch (error) {
+    return resp.status(500).send({ error: error.stack });
+  }
+};
+
+exports.removeById = async (req, resp) => {
+  const getByIdQuery = `SELECT *
+           FROM users
+          WHERE id = $1`;
+
+  const deleteByIdQuery = `
+        DELETE FROM users
+              WHERE id= $1`;
+  try {
+    const { id } = req.params;
+    const verifyId = await pool.execute(getByIdQuery, [id]);
+    if (!verifyId.rowCount) {
+      return resp.status(404).send({
+        message: `User not found for id: ${id}`,
+      });
+    }
+
+    await pool.execute(deleteByIdQuery, [id]);
+    const response = {
+      message: `User with id ${id} deleted sucessfully!`,
+      request: {
+        type: 'POST',
+        url: 'http:localhost:3000/users',
+        description: 'Register a new user',
+        body: {
+          username: 'String',
+          email: 'String',
+        },
+      },
+    };
+    return resp.status(202).send(response);
+  } catch (error) {
+    return resp.status(500).send({ error });
+  }
+};
+
+exports.update = async (req, resp) => {
+  const getByIdQuery = `
+        SELECT * FROM users
+                WHERE id = $1`;
+  const updateQuery = `
+        UPDATE users
+           SET username = $1,
+               email = $2
+         WHERE id = $3;
+          `;
+  try {
+    const { username, email } = req.body;
+    const { id } = req.params;
+
+    const verifyId = await pool.execute(getByIdQuery, [id]);
+    if (!verifyId.rowCount) {
+      return resp.status(404).send({
+        message: `User not found for id: ${id}`,
+      });
+    }
+
+    const result = await pool.execute(updateQuery, [username, email, id]);
+    const response = {
+      message: 'User updated sucessfully!',
+      updatedOrder: {
+        id,
+        username,
+        email,
+        request: {
+          type: 'GET',
+          url: 'http:localhost:3000/users',
+          description: 'List all users',
+        },
+      },
+    };
+
+    return resp.status(202).send({ response });
+  } catch (error) {
+    console.log(error);
+    return resp.status(500).send(error.stack);
+  }
+};
