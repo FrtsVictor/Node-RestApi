@@ -1,18 +1,21 @@
-const pool = require('./_database');
+const db = require('./_database');
 
 const insertOrders = async () => {
-  await pool.connect();
+  console.log('test');
 
-  const queryOrder = 'INSERT INTO orders (id_product, qtt) VALUES($1, $2)';
+  const queryOrder = `
+        INSERT INTO orders
+            (id_product, qtt)
+        VALUES
+            (1,7),
+            (2,4),
+            (3,1),
+            (4,5),
+            (5,6),
+            (1,5);
+          `;
 
-  await pool.query(queryOrder, [3, 2]);
-  await pool.query(queryOrder, [5, 1]);
-  await pool.query(queryOrder, [6, 5]);
-  await pool.query(queryOrder, [7, 12]);
-  await pool.query(queryOrder, [8, 3]);
-
-  await pool.end();
-
+  await db.execute(queryOrder);
   console.log('Orders insert OK');
 };
 
