@@ -3,46 +3,39 @@ const jwt = require('jsonwebtoken');
 
 const pool = require('../sql/_database');
 
-exports.register = (req, resp, next) => {
+exports.register = async (req, resp, next) => {
   const { username, password, email } = req.body;
   const verifyUserQuery = 'SELECT * FROM users WHERE email = $1';
   const insertQuery = `
-  INSERT INTO users
-  (username, email, password)
-  VALUES ($1, $2, $3)`;
+        INSERT INTO users
+          (username, email, password)
+        VALUES
+            ($1, $2, $3)`;
 
-  pool.connect((errConnect, conn) => {
-    if (errConnect) return resp.status(500).send({ error: errConnect });
+  try {
+    const resultVerify = await pool.execute(verifyUserQuery, [email]);
+    if (resultVerify.rowCount) {
+      resp.status(409).send({ message: 'User already registred' });
+    } else {
+      await bcrypt.hash(password, 10, (errBcrypt, hash) => {
+        if (errBcrypt) return resp.status(500).send({ error: errBcrypt });
+        const resultInsert = pool.execute(insertQuery, [username, email, hash]);
+        const response = {
+          message: 'User created sucessfully',
+          createdUser: {
+            id: resultInsert.id,
+            username,
+            email,
+          },
+        };
 
-    conn.query(verifyUserQuery, [email], (errVerifyUser, resultVerify) => {
-      if (errVerifyUser) return resp.status(500).send({ error: errVerifyUser });
-      if (resultVerify.rowCount) {
-        resp.status(409).send({ message: 'User already registred' });
-      } else {
-        bcrypt.hash(password, 10, (errBcrypt, hash) => {
-          if (errBcrypt) return resp.status(500).send({ error: errBcrypt });
-          conn.query(
-            insertQuery,
-            [username, email, hash],
-            (errInsert, resultInsert) => {
-              conn.release();
-              if (errInsert) return resp.status(500).send({ errInsert });
-              const response = {
-                message: 'User created sucessfully',
-                createdUser: {
-                  id: resultInsert.id,
-                  username,
-                  email,
-                },
-              };
-
-              return resp.status(201).send(response);
-            }
-          );
-        });
-      }
-    });
-  });
+        return resp.status(201).send(response);
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return resp.status(201).send(error);
+  }
 };
 
 exports.login = async (req, resp) => {
