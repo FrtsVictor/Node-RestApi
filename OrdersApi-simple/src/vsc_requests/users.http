@@ -1,4 +1,13 @@
-#Traz os produtod
+
+POST  http://localhost:3000/users/login
+Content-Type: application/json
+
+    {
+        "email": "victor@victoaarw2rs",
+        "password": "123321"
+    }
+
+###
 
 GET  http://localhost:3000/users/4
 Content-Type: application/json
@@ -21,17 +30,6 @@ Content-Type: application/json
         "email": "victor@victoaarw2rss",
         "password": "123321",
         "username":"loudnwesaas2srs"
-    }
-
-###
-
-
-POST  http://localhost:3000/users/login
-Content-Type: application/json
-
-    {
-        "email": "victor@victoaarw2rs",
-        "password": "123321"
     }
 
 ###
