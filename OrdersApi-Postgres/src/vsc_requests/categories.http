@@ -1,0 +1,38 @@
+#Traz os produtod
+
+GET  http://localhost:3000/categories/
+Content-Type: application/json
+###
+
+
+GET  http://localhost:3000/categories/
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE2VDA0OjA5OjI2LjI2MloiLCJpYXQiOjE2MDU0OTk3NjYsImV4cCI6MTYwNTUwMzM2Nn0.f4avOecChd5b-wuHB2rDdScJszTHGf05nM2buOqWRxI
+###
+
+
+POST  http://localhost:3000/categories
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE4VDE3OjQ0OjE5LjIyMFoiLCJpYXQiOjE2MDU3MjE0NTksImV4cCI6MTYwNTc1MDI1OX0.B4fXKOnGEF0INuIKYCN59q_8ip1_RcjP5PFG0MLKPfA
+
+    {
+        "name": "cat4",
+        "description": "vsc rest connection"
+    }
+
+###
+
+PUT  http://localhost:3000/categories/4
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE4VDE3OjQ0OjE5LjIyMFoiLCJpYXQiOjE2MDU3MjE0NTksImV4cCI6MTYwNTc1MDI1OX0.B4fXKOnGEF0INuIKYCN59q_8ip1_RcjP5PFG0MLKPfA
+
+    {
+        "name": "cat4 updated",
+        "description": "vsc rest connection"
+    }
+
+###
+
+DELETE http://localhost:3000/categories/4
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE4VDE3OjQ0OjE5LjIyMFoiLCJpYXQiOjE2MDU3MjE0NTksImV4cCI6MTYwNTc1MDI1OX0.B4fXKOnGEF0INuIKYCN59q_8ip1_RcjP5PFG0MLKPfA

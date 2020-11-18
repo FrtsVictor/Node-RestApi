@@ -1,11 +1,11 @@
 #Traz os produtod
 
-GET  http://localhost:3000/products/13
+GET  http://localhost:3000/products/47
 Content-Type: application/json
 ###
 
 
-GET  http://localhost:3000/products/
+GET  http://localhost:3000/products/?category_id=1&name=teste
 Content-Type: application/json
 Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjYsInVzZXJuYW1lIjoibG91ZG53ZXNhYXMycnMiLCJlbWFpbCI6InZpY3RvckB2aWN0b2FhcncycnMiLCJsb2dpblRpbWUiOiIyMDIwLTExLTE2VDA0OjA5OjI2LjI2MloiLCJpYXQiOjE2MDU0OTk3NjYsImV4cCI6MTYwNTUwMzM2Nn0.f4avOecChd5b-wuHB2rDdScJszTHGf05nM2buOqWRxI
 ###
