@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
     cb(null, './uploads/');
   },
   filename(req, file, cb) {
-    cb(null, new Date().toISOString() + file.originalname);
+    cb(null, new Date().toISOString() + file.originalname.replace(/\s+/g, ''));
   },
 });
 
@@ -35,19 +35,24 @@ const upload = multer({
 // _________________ROUTES_________________
 
 router.get('/', login.optional, ProductsController.getAll);
-
 router.get('/:id', ProductsController.getById);
 
-// eslint-disable-next-line prettier/prettier
 router.post(
   '/',
   login.mandatory,
   upload.single('pdt_img'),
   ProductsController.create
 );
-
 router.put('/:id', login.mandatory, ProductsController.update);
-
 router.delete('/:id', login.mandatory, ProductsController.delete);
 
+// Images
+router.post(
+  '/:id/img',
+  login.mandatory,
+  upload.single('pdt_img'),
+  ProductsController.uploadImage
+);
+
+router.get('/:id/imgs', login.optional, ProductsController.getProductImages);
 module.exports = router;

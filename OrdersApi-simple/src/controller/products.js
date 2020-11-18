@@ -14,6 +14,7 @@ exports.getAll = async (req, resp) => {
         description: pdt.description,
         price: pdt.price,
         qtt_stock: pdt.qtt_stock,
+        image: pdt.image,
         request: {
           type: 'GET',
           url: `http:localhost:3000/products/${pdt.id}`,
@@ -28,9 +29,7 @@ exports.getAll = async (req, resp) => {
 };
 
 exports.getById = async (req, resp) => {
-  const getByIdQuery = `
-  SELECT * FROM products
-  WHERE id = $1`;
+  const getByIdQuery = 'SELECT * FROM products WHERE id = $1';
 
   try {
     const { id } = req.params;
@@ -66,18 +65,20 @@ exports.getById = async (req, resp) => {
 
 exports.create = async (req, resp) => {
   const postQuery = `
-  INSERT INTO products
-  (
-    name,
-    price,
-    qtt_stock,
-    description, image
-    )
-    VALUES ($1, $2, $3, $4, $5)`;
+        INSERT INTO products
+                  (
+                    name,
+                    price,
+                    qtt_stock,
+                    description,
+                    image
+                  )
+          VALUES  (
+                    $1, $2, $3, $4, $5
+                   )`;
 
   try {
     const { name, price, qtt_stock, description } = req.body;
-
     const result = await pool.execute(postQuery, [
       name,
       price,
@@ -104,22 +105,21 @@ exports.create = async (req, resp) => {
     };
     return resp.status(201).send(response);
   } catch (error) {
+    console.log(error);
     return resp.status(500).send(error.stack);
   }
 };
 
 exports.update = async (req, resp) => {
-  const getByIdQuery = `
-  SELECT * FROM products
-  WHERE id = $1`;
+  const getByIdQuery = 'SELECT * FROM products WHERE id = $1';
 
   const patchQuery = `
-  UPDATE products
-  SET name = $1,
-  price = $2,
-  qtt_stock = $3,
-  description = $4
-  WHERE id = $5`;
+        UPDATE products
+           SET name = $1,
+               price = $2,
+               qtt_stock = $3,
+               description = $4
+         WHERE id = $5`;
 
   try {
     const { name, price, qtt_stock, description } = req.body;
@@ -162,9 +162,7 @@ exports.update = async (req, resp) => {
 };
 
 exports.delete = async (req, resp) => {
-  const deleteQuery = `
-          DELETE FROM products
-                WHERE id=$1`;
+  const deleteQuery = 'DELETE FROM products WHERE id=$1';
 
   try {
     const { id } = req.params;
@@ -184,6 +182,60 @@ exports.delete = async (req, resp) => {
       },
     };
     return resp.status(202).send(response);
+  } catch (error) {
+    return resp.status(500).send(error.stack);
+  }
+};
+
+exports.uploadImage = async (req, resp) => {
+  const postQuery = `
+        INSERT INTO products_img
+                  ( id_product, img_path)
+          VALUES  ( $1, $2 )`;
+  try {
+    const result = await pool.execute(postQuery, [
+      req.params.id,
+      req.file.path,
+    ]);
+    const response = {
+      message: 'Image uploaded sucessfully!',
+      uploadedImage: {
+        id_img: result.id,
+        id_product: req.params.id,
+        image_path: req.file.path,
+        request: {
+          type: 'GET',
+          url: `http:localhost:3000/products/${req.params.id}/imgs`,
+          description: 'Return all products',
+        },
+      },
+    };
+    return resp.status(201).send(response);
+  } catch (error) {
+    console.log(error);
+    return resp.status(500).send({ errrodoido: error.stack });
+  }
+};
+
+exports.getProductImages = async (req, resp) => {
+  const getAllQuery = 'SELECT * FROM products_img WHERE id_product = $1';
+  try {
+    const { id } = req.params;
+    const result = await pool.execute(getAllQuery, [id]);
+    const response = {
+      totalImages: result.rows.length,
+      images: result.rows.map((img) => ({
+        id: img.id,
+        id_product: Number(id),
+        path: `http://localhost:3000/${img.img_path}`,
+        request: {
+          type: 'GET',
+          url: `http:localhost:3000/products/${img.id}`,
+          description: 'Return product by id',
+        },
+      })),
+    };
+    return resp.status(200).send({ response });
   } catch (error) {
     return resp.status(500).send(error.stack);
   }
