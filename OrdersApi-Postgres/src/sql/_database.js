@@ -16,8 +16,10 @@ exports.execute = (query, params = []) =>
   new Promise((resolve, reject) => {
     pool.query(query, params, (errQuery, result) => {
       if (errQuery) {
-        reject(errQuery);
+        console.log('errQuery', errQuery);
+        reject(errQuery.stack);
       }
+      console.log('result', result);
       return resolve(result);
     });
   });

@@ -65,7 +65,7 @@ exports.login = async (req, resp) => {
           loginTime: new Date().toISOString(),
         },
         'JWT_SECRET',
-        { expiresIn: '1h' }
+        { expiresIn: '8h' }
       );
       return resp.status(200).send({
         message: 'Login sucessfully.',
