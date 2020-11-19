@@ -4,7 +4,14 @@ const User = require("../models/User");
 
 module.exports = {
   async index(req, resp) {
-    const users = await User.findAndCountAll();
+    const { user_id } = req.params;
+
+    const user = await User.findByPk(user_id);
+
+    if (!user) {
+      return resp.status(400).json({ error: "User not found" });
+    }
+
     return resp.json(users);
   },
 
