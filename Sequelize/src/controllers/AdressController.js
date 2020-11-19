@@ -1,18 +1,20 @@
 const { json } = require("sequelize");
-const Adresses = require("../models/Addresses");
+const Address = require("../models/Address");
 const User = require("../models/User");
 
 module.exports = {
   async index(req, resp) {
     const { user_id } = req.params;
 
-    const user = await User.findByPk(user_id);
+    const user = await User.findByPk(user_id, {
+      include: { association: "addresses" },
+    });
 
     if (!user) {
       return resp.status(400).json({ error: "User not found" });
     }
 
-    return resp.json(users);
+    return resp.json(user);
   },
 
   async Store(req, resp) {
@@ -25,7 +27,7 @@ module.exports = {
       return resp.status(400).json({ error: "User not found" });
     }
 
-    const addresses = await Adresses.create({
+    const addresses = await Address.create({
       zipcode,
       street,
       number,
