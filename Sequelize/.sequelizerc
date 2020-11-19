@@ -1,0 +1,7 @@
+const path = require("path");
+const database = require("./src/config/database");
+// path do node
+
+module.exports = {
+  config: path.resolve(__dirname, "src", "config", "database.js"),
+};
