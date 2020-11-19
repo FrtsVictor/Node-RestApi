@@ -1,0 +1,13 @@
+POST  http://localhost:3333/users/2/addresses
+Content-Type: application/json
+
+    {
+      "zipcode": "25968-51",
+      "street": "My fav Strret 2",
+      "number": "199",
+      "state": "Tere"
+    }
+###
+
+GET  http://localhost:3333/users
+Content-Type: application/json
