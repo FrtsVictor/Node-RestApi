@@ -14,6 +14,7 @@ module.exports = {
       return resp.status(400).json({ error: "User not found" });
     }
 
+    //user.adress
     return resp.json(user);
   },
 
