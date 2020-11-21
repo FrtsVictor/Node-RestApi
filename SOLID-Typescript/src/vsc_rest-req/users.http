@@ -1,0 +1,14 @@
+POST  http://localhost:3333/users
+Content-Type: application/json
+
+{
+    "name" : "victor",
+    "username" : "vic",
+    "email" : "victorfreitas.job@gmail.com",
+    "password" : "123321"
+}
+
+###
+
+GET  http://localhost:3333/users
+Content-Type: application/json
