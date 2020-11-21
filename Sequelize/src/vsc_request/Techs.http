@@ -1,0 +1,10 @@
+POST  http://localhost:3333/users/1/techs
+Content-Type: application/json
+
+    {
+      "name": "NodeJS"
+    }
+###
+
+GET  http://localhost:3333/users/1/techs
+Content-Type: application/json
