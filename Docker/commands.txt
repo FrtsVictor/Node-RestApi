@@ -1,0 +1,6 @@
+docker build -t loudness/dockernode .
+                                    . where are the docker file on root don't need path 
+docker run -p 3000:3000 -d loudness/dockernode  
+                                    run with name of container   
+docker stop idhere
+npm install nodemon                                  
