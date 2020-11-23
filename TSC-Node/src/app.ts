@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
+import routes from './routes'
 
 class App {
     public express: express.Application
@@ -19,13 +20,15 @@ class App {
     }
 
     private database ():void {
-      mongoose.connect('mongodb://localhost:27017')
+      mongoose.connect('mongodb://localhost:27017/ts',
+        {
+          useNewUrlParser: true,
+          useUnifiedTopology: true
+        })
     }
 
     private routes ():void {
-      this.express.get('/', (req, res) => {
-        return res.send('test')
-      })
+      this.express.use(routes)
     }
 }
 
