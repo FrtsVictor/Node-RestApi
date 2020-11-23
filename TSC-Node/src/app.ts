@@ -20,7 +20,7 @@ class App {
     }
 
     private database ():void {
-      mongoose.connect('mongodb://localhost:27017',
+      mongoose.connect('mongodb://localhost:27017/ts',
         {
           useNewUrlParser: true,
           useUnifiedTopology: true
